@@ -27,7 +27,7 @@ const Navbar = () => {
         </div>
 
         <a
-          href="https://github.com/apps/pr-reviewer-bot"
+          href="https://github.com/apps/ai-powered-pr-reviewer"
           target="_blank"
           rel="noopener noreferrer"
         >

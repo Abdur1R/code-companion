@@ -18,7 +18,7 @@ const Footer = () => {
         </p>
 
         <a
-          href="https://github.com/apps/pr-reviewer-bot"
+          href="https://github.com/apps/ai-powered-pr-reviewer"
           target="_blank"
           rel="noopener noreferrer"
           className="text-sm text-muted-foreground transition-colors hover:text-primary"

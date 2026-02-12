@@ -54,7 +54,7 @@ const Hero = () => {
           className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row"
         >
           <a
-            href="https://github.com/apps/pr-reviewer-bot"
+            href="https://github.com/apps/ai-powered-pr-reviewer"
             target="_blank"
             rel="noopener noreferrer"
           >
