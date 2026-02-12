@@ -4,17 +4,17 @@ import path from "path";
 import { componentTagger } from "lovable-tagger";
 
 export default defineConfig(({ mode }) => ({
+  base: "/code-companion/",   // ⭐ ADD THIS
+
   server: {
     host: "::",
     port: 8080,
-    hmr: {
-      overlay: false,
-    },
+    hmr: { overlay: false },
   },
 
   plugins: [
     react(),
-    mode === "development" && componentTagger()
+    mode === "development" && componentTagger(),
   ].filter(Boolean),
 
   resolve: {
@@ -23,3 +23,4 @@ export default defineConfig(({ mode }) => ({
     },
   },
 }));
+
