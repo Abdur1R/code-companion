@@ -21,8 +21,8 @@ const Navbar = () => {
           <a href="#features" className="text-sm text-muted-foreground transition-colors hover:text-foreground">
             Features
           </a>
-          <a href="#ai-models" className="text-sm text-muted-foreground transition-colors hover:text-foreground">
-            AI Models
+          <a href="#settings" className="text-sm text-muted-foreground transition-colors hover:text-foreground">
+            Settings
           </a>
         </div>
 
