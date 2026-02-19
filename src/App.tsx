@@ -12,13 +12,13 @@ import AIModels from "./components/landing/AIModels";
 
 const queryClient = new QueryClient();
 
-const appRoutes=[
+const appRoutes = [
   { path: "/", element: <Index /> },
   { path: "/settings", element: <SettingsPage /> },
-  {path:"/features", element: <Features />},
-  {path:"/how-it-works", element: <HowItWorks />},
-  {path:"/ai-models", element: <AIModels />},
-  {path: "*", element: <NotFound /> },
+  { path: "/features", element: <Features /> },
+  { path: "/how-it-works", element: <HowItWorks /> },
+  { path: "/ai-models", element: <AIModels /> },
+  { path: "*", element: <NotFound /> },
 ]
 
 const App = () => (
