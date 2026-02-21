@@ -285,12 +285,12 @@ export default function SettingsPage() {
                 </div>
 
                 <Input
+                    defaultValue={settings.installationId ?? ""}
                     // value={settings.installationId}
                     // onChange={(e) =>
                     //     updateField("installationId", e.target.value)
                     // }
                     onBlur={(e) => {
-                        console.log("I am onBlur output", e.target.value);
                         updateField("installationId", e.target.value);
                     }}
                     placeholder="Enter installation ID"
@@ -392,7 +392,7 @@ export default function SettingsPage() {
             </section>
 
             {/* Auto Review */}
-            <section className="p-6 border rounded-xl flex justify-between items-center">
+            {/* <section className="p-6 border rounded-xl flex justify-between items-center">
 
                 <div>
                     <p className="font-medium">
@@ -417,7 +417,7 @@ export default function SettingsPage() {
                         }`}
                 />
 
-            </section>
+            </section> */}
 
             {/* Save */}
             <div className="flex justify-end">
