@@ -82,6 +82,7 @@ export default function SettingsPage() {
 
     const [isFirstVisit, setIsFirstVisit] = useState(false);
     const [initialized, setInitialized] = useState(false);
+    const [dummyFlag, setDummyFlag] = useState(false); // Used to force re-render when selected model changes
 
     /**
      * Helper: update state field
@@ -134,7 +135,7 @@ export default function SettingsPage() {
             if (installationId) return;
 
             try {
-                const data = await getInstallation(
+                const data: any = await getInstallation(
                     Number(settings.installationId)
                 );
 
@@ -158,7 +159,7 @@ export default function SettingsPage() {
                 }
 
                 console.log("data", data);
-                if (!(data && data.installationId)) {
+                if (!(data && !(Object.keys(data).includes("exists")))) {
                     loadRepos();
                 }
             } catch (err) {
@@ -192,6 +193,11 @@ export default function SettingsPage() {
 
         loadInstallation();
     }, [settings.installationId]);
+
+    useEffect(() => {
+        // Force re-render when selected model changes to update the Select component
+        setDummyFlag((prev) => !prev);
+    }, [settings.provider]);
 
 
     /**
@@ -321,17 +327,12 @@ export default function SettingsPage() {
 
                 {settings.selectedrepos.map((repo) => {
 
-                    const selected = selectedRepos.includes(repo.id);
-
+                    // const selected = selectedRepos.includes(repo.id);
                     return (
                         <div
                             key={repo.id}
                             // onClick={() => toggleRepo(repo.id)}
-                            className={`p-3 border rounded-lg cursor-pointer flex justify-between transition
-              ${selected
-                                    ? "border-primary bg-primary/5"
-                                    : "hover:border-primary/50"
-                                }`}
+                            className={`p-3 border rounded-lg cursor-pointer flex justify-between transition hover:border-primary/50" }`}
                         >
 
                             <div className="flex gap-2 items-center">
@@ -340,13 +341,13 @@ export default function SettingsPage() {
                                     {repo.full_name}
                                 </span>
                             </div>
-
+                            {/* 
                             {selected && (
                                 <CheckCircle2
                                     size={16}
                                     className="text-primary"
                                 />
-                            )}
+                            )} */}
 
                         </div>
                     );
@@ -362,23 +363,20 @@ export default function SettingsPage() {
                     <Bot size={16} />
                     <Label>AI Model</Label>
                 </div>
-
                 <Select
+                    defaultValue={settings.provider || ""}
                     onValueChange={(value) =>
                         updateField("provider", value)
                     }
                 >
-
                     <SelectTrigger>
                         <SelectValue placeholder="Select AI model" />
                     </SelectTrigger>
 
                     <SelectContent>
 
-                        {AI_MODELS.map((model) => (
-
+                        {AI_MODELS.map((model) =>(
                             <SelectItem
-                                defaultValue={settings.provider || ""}
                                 key={model.value}
                                 value={model.value}
                             >
