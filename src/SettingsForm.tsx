@@ -55,9 +55,10 @@ interface Repo {
 
 interface SettingsState {
     installationId: string;
-    aiModel: string;
+    aiModel?: string;
     autoReview: boolean;
     selectedrepos: Repo[];
+    aiProvider?: string;
 }
 
 const defaultSettings: SettingsState = {
@@ -70,7 +71,7 @@ const defaultSettings: SettingsState = {
 export default function SettingsPage() {
     const [searchParams] = useSearchParams();
 
-    const [settings, setSettings] = useState(defaultSettings);
+    const [settings, setSettings] = useState<SettingsState>(defaultSettings);
 
     const [repos, setRepos] = useState<Repo[]>([]);
     const [selectedRepos, setSelectedRepos] = useState<number[]>([]);
@@ -140,7 +141,8 @@ export default function SettingsPage() {
                     setSettings((prev) => ({
                         ...prev,
                         installationId: String(data.installationId),
-                        aiModel: data.reviewer.aiModel || "",
+                        aiModel: data.reviewer.model || "",
+                        aiProvider: data.reviewer.provider || "",
                         autoReview: data.reviewer.autoReview ?? true,
                         selectedrepos: data.selectedRepos || [],
                     }));
@@ -229,7 +231,8 @@ export default function SettingsPage() {
                     user_id: userId || "", // replace with real auth
                     selected_repos: settings.selectedrepos,
                     reviewer: {
-                        aiModel: settings.aiModel,
+                        provider: settings.aiProvider || "",  // example: "groq"
+                        model: settings.aiModel || "",       // example: "llama-3.3-70b-versatile"
                     },
                 }
             );
@@ -362,7 +365,7 @@ export default function SettingsPage() {
                 <Select
                     value={settings.aiModel}
                     onValueChange={(value) =>
-                        updateField("aiModel", value)
+                        updateField("aiProvider", value)
                     }
                 >
 
@@ -375,7 +378,7 @@ export default function SettingsPage() {
                         {AI_MODELS.map((model) => (
 
                             <SelectItem
-                                defaultValue={settings.aiModel || ""}
+                                defaultValue={settings.aiProvider || ""}
                                 key={model.value}
                                 value={model.value}
                             >
