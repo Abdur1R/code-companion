@@ -37,6 +37,7 @@ import {
  */
 const AI_MODELS = [
     { value: "huggingface", label: "Hugging Face", desc: "" },
+    { value: "groq", label: "Groq", desc: "" },
     // { value: "gpt-4o", label: "GPT-4o", desc: "Best quality" },
     // { value: "gpt-4o-mini", label: "GPT-4o Mini", desc: "Fast & affordable" },
     // { value: "claude-3.5-sonnet", label: "Claude 3.5 Sonnet", desc: "Best for code" },
@@ -363,7 +364,6 @@ export default function SettingsPage() {
                 </div>
 
                 <Select
-                    value={settings.aiModel}
                     onValueChange={(value) =>
                         updateField("aiProvider", value)
                     }
@@ -382,7 +382,7 @@ export default function SettingsPage() {
                                 key={model.value}
                                 value={model.value}
                             >
-                                {model.label} — {model.desc}
+                                {model.label}
                             </SelectItem>
 
                         ))}
