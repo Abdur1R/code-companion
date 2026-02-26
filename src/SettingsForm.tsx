@@ -214,8 +214,8 @@ export default function SettingsPage() {
             return;
         }
 
-        if (!settings.aiModel) {
-            toast.error("Please select AI model");
+        if (!settings.aiProvider) {
+            toast.error("Please select AI provider");
             return;
         }
 
