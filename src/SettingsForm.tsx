@@ -221,16 +221,15 @@ export default function SettingsPage() {
             //     selectedRepos.includes(repo.id)
             // );
 
-            const userId = await getUserId(Number(settings.installationId));
+            const userId: any = await getUserId(Number(settings.installationId));
             console.log("userId", userId);
             await saveInstallationSettings(
                 Number(settings.installationId),
                 {
-                    user_id: userId?.userId || "", // replace with real auth
+                    user_id: userId || "", // replace with real auth
                     selected_repos: settings.selectedrepos,
                     reviewer: {
                         aiModel: settings.aiModel,
-                        autoReview: settings.autoReview,
                     },
                 }
             );

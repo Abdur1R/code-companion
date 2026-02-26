@@ -9,7 +9,7 @@ export interface Repo {
 export interface ReviewerConfig {
   aiModel: string;
   reviewStyle?: string;
-  autoReview: boolean;
+  autoReview?: boolean;
 }
 
 export interface InstallationSettingsRequest {
