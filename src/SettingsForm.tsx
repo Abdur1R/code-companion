@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
-import { useSearchParams } from "react-router-dom";
-
+import { useSearchParams, useNavigate } from "react-router-dom";
 import {
     Save,
     GitBranch,
@@ -9,22 +8,11 @@ import {
     CheckCircle2,
     Loader2,
     Info,
+    ArrowLeft,
+    Settings as SettingsIcon,
 } from "lucide-react";
-
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from "@/components/ui/select";
-
 import { toast } from "sonner";
-
 import {
     saveInstallationSettings,
     getInstallation,
@@ -32,22 +20,11 @@ import {
     getUserId,
 } from "@/services/installations";
 
-/**
- * AI Models
- */
 const AI_MODELS = [
     { value: "huggingface", label: "Hugging Face", desc: "" },
     { value: "groq", label: "Groq", desc: "" },
-    // { value: "gpt-4o", label: "GPT-4o", desc: "Best quality" },
-    // { value: "gpt-4o-mini", label: "GPT-4o Mini", desc: "Fast & affordable" },
-    // { value: "claude-3.5-sonnet", label: "Claude 3.5 Sonnet", desc: "Best for code" },
-    // { value: "claude-3-haiku", label: "Claude 3 Haiku", desc: "Fastest" },
-    // { value: "gemini-pro", label: "Gemini Pro", desc: "Google model" },
 ];
 
-/**
- * Types
- */
 interface Repo {
     id: number;
     name: string;
@@ -71,74 +48,46 @@ const defaultSettings: SettingsState = {
 
 export default function SettingsPage() {
     const [searchParams] = useSearchParams();
-
+    const navigate = useNavigate();
     const [settings, setSettings] = useState<SettingsState>(defaultSettings);
-
     const [repos, setRepos] = useState<Repo[]>([]);
     const [selectedRepos, setSelectedRepos] = useState<number[]>([]);
-
     const [loadingRepos, setLoadingRepos] = useState(false);
     const [saving, setSaving] = useState(false);
-
     const [isFirstVisit, setIsFirstVisit] = useState(false);
     const [initialized, setInitialized] = useState(false);
-    const [dummyFlag, setDummyFlag] = useState(false); // Used to force re-render when selected model changes
+    const [dummyFlag, setDummyFlag] = useState(false);
 
-    /**
-     * Helper: update state field
-     */
     function updateField<K extends keyof SettingsState>(
         key: K,
         value: SettingsState[K]
     ) {
-        setSettings((prev) => ({
-            ...prev,
-            [key]: value,
-        }));
+        setSettings((prev) => ({ ...prev, [key]: value }));
     }
 
-    // This reads query params BEFORE hash
     const params = new URLSearchParams(window.location.search);
-
     const installationId = params.get("installation_id");
 
-    /**
-     * STEP 1: Extract installation_id from URL
-     */
     useEffect(() => {
         if (installationId) {
-
-            setSettings(prev => ({
-                ...prev,
-                installationId: installationId,
-            }));
-
+            setSettings((prev) => ({ ...prev, installationId }));
             setIsFirstVisit(true);
-
-            // clean URL
             window.history.replaceState(
                 {},
                 document.title,
                 window.location.pathname + window.location.hash
             );
         }
-
         setInitialized(true);
-
     }, []);
 
-    /**
-     * STEP 2: Load installation settings from backend
-     */
     useEffect(() => {
         async function loadInstallation() {
             if (installationId) return;
-
             try {
                 const data: any = await getInstallation(
                     Number(settings.installationId)
                 );
-
                 if (data && data.reviewer) {
                     setSettings((prev) => ({
                         ...prev,
@@ -148,18 +97,9 @@ export default function SettingsPage() {
                         autoReview: data.reviewer.autoReview ?? true,
                         selectedrepos: data.selectedRepos || [],
                     }));
-
-
-                    // const repoIds =
-                    //     data.selectedRepos?.map((r: Repo) => r.id) || [];
-
-                    // setSelectedRepos(repoIds);
-
                     setIsFirstVisit(false);
                 }
-
-                console.log("data", data);
-                if (!(data && !(Object.keys(data).includes("exists")))) {
+                if (!(data && !Object.keys(data).includes("exists"))) {
                     loadRepos();
                 }
             } catch (err) {
@@ -168,21 +108,15 @@ export default function SettingsPage() {
         }
 
         async function loadRepos() {
-            // if (!installationId) return;
-
             setLoadingRepos(true);
-
             try {
                 const res: any = await getInstallationRepos(
                     Number(installationId || settings.installationId || 0)
                 );
-                console.log("repos", res);
                 setSettings((prev) => ({
                     ...prev,
                     selectedrepos: res.repositories ?? [],
                 }));
-
-                // setRepos(res.repositories ?? []);
             } catch (err) {
                 console.error(err);
                 toast.error("Failed to load repositories");
@@ -191,18 +125,15 @@ export default function SettingsPage() {
             }
         }
 
-        loadInstallation();
+        if (settings.installationId) {
+            loadInstallation();
+        }
     }, [settings.installationId]);
 
     useEffect(() => {
-        // Force re-render when selected model changes to update the Select component
         setDummyFlag((prev) => !prev);
     }, [settings.provider]);
 
-
-    /**
-     * Toggle repo selection
-     */
     function toggleRepo(repoId: number) {
         setSelectedRepos((prev) =>
             prev.includes(repoId)
@@ -211,42 +142,27 @@ export default function SettingsPage() {
         );
     }
 
-    /**
-     * Save settings
-     */
     async function handleSave() {
         if (!settings.installationId) {
             toast.error("Installation ID required");
             return;
         }
-
         if (!settings.provider) {
             toast.error("Please select AI provider");
             return;
         }
-
         try {
-            // const selectedRepoObjects = repos.filter((repo) =>
-            //     selectedRepos.includes(repo.id)
-            // );
-
             const userId: any = await getUserId(Number(settings.installationId));
-            console.log("userId", userId);
-            await saveInstallationSettings(
-                Number(settings.installationId),
-                {
-                    user_id: userId || "", // replace with real auth
-                    selected_repos: settings.selectedrepos,
-                    reviewer: {
-                        provider: settings.provider || "",  // example: "groq"
-                        model: settings.model || "",       // example: "llama-3.3-70b-versatile"
-                    },
-                }
-            );
-
+            await saveInstallationSettings(Number(settings.installationId), {
+                user_id: userId || "",
+                selected_repos: settings.selectedrepos,
+                reviewer: {
+                    provider: settings.provider || "",
+                    model: settings.model || "",
+                },
+            });
             toast.success("Settings saved successfully");
             setSaving(true);
-
             setIsFirstVisit(false);
         } catch (err) {
             console.error(err);
@@ -256,196 +172,340 @@ export default function SettingsPage() {
         }
     }
 
-    console.log("settings", settings);
-
     if (!initialized) return null;
 
-    return (
-        <div className="max-w-3xl mx-auto px-6 py-8 space-y-6">
+    const hasInstallationId = settings.installationId.trim().length > 0;
 
-            {/* Banner */}
-            {settings.installationId && (
-                isFirstVisit ? (
-                    <div className="flex items-center gap-3 p-4 bg-primary/5 border rounded-lg">
-                        <CheckCircle2 className="text-primary" />
+    return (
+        <div
+            style={{
+                minHeight: "100vh",
+                background: "#0d1117",
+                color: "#c9d1d9",
+                fontFamily:
+                    '-apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif',
+            }}
+        >
+            {/* Header */}
+            <div
+                style={{
+                    maxWidth: 600,
+                    margin: "0 auto",
+                    padding: "24px 16px 0",
+                }}
+            >
+
+                {/* Banner */}
+                {hasInstallationId && isFirstVisit && (
+                    <div
+                        style={{
+                            background: "rgba(35, 134, 54, 0.15)",
+                            border: "1px solid rgba(35, 134, 54, 0.4)",
+                            borderRadius: 8,
+                            padding: "12px 16px",
+                            marginBottom: 16,
+                            display: "flex",
+                            alignItems: "center",
+                            gap: 10,
+                        }}
+                    >
+                        <CheckCircle2 size={18} color="#3fb950" />
                         <div>
-                            <p className="font-medium">
+                            <div style={{ fontSize: 14, fontWeight: 500, color: "#e6edf3" }}>
                                 GitHub App installed successfully
-                            </p>
-                            <p className="text-sm text-muted-foreground">
+                            </div>
+                            <div style={{ fontSize: 12, color: "#8b949e" }}>
                                 Installation ID: {settings.installationId}
-                            </p>
+                            </div>
                         </div>
                     </div>
-                ) : (
-                    <div className="flex items-center gap-3 p-4 border rounded-lg">
-                        <Info />
+                )}
+
+                {hasInstallationId && !isFirstVisit && (
+                    <div
+                        style={{
+                            background: "rgba(56, 139, 253, 0.1)",
+                            border: "1px solid rgba(56, 139, 253, 0.3)",
+                            borderRadius: 8,
+                            padding: "10px 14px",
+                            marginBottom: 16,
+                            display: "flex",
+                            alignItems: "center",
+                            gap: 8,
+                            fontSize: 13,
+                            color: "#e6edf3",
+                        }}
+                    >
+                        <Info size={16} color="#58a6ff" />
                         Settings loaded successfully
                     </div>
-                )
-            )}
+                )}
 
-            {/* Installation */}
-            <section className="p-6 border rounded-xl space-y-2">
-
-                <div className="flex gap-2 items-center">
-                    <GitBranch size={16} />
-                    <Label>Installation ID</Label>
-                </div>
-
-                <Input
-                    defaultValue={settings.installationId ?? ""}
-                    // value={settings.installationId}
-                    // onChange={(e) =>
-                    //     updateField("installationId", e.target.value)
-                    // }
-                    onBlur={(e) => {
-                        updateField("installationId", e.target.value);
+                {/* Installation ID Card */}
+                <div
+                    style={{
+                        background: "#161b22",
+                        border: "1px solid #30363d",
+                        borderRadius: 10,
+                        padding: "20px 20px 18px",
+                        marginBottom: 12,
                     }}
-                    placeholder="Enter installation ID"
-                />
+                >
+                    <label
+                        style={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: 8,
+                            fontSize: 14,
+                            fontWeight: 500,
+                            color: "#e6edf3",
+                        }}
+                    >
+                        <GitBranch size={16} color="#8b949e" />
+                        Installation ID
 
-            </section>
-
-            {/* Repositories */}
-            <section className="p-6 border rounded-xl space-y-4">
-
-                <div className="flex justify-between items-center">
-
-                    <div className="flex gap-2 items-center">
-                        <Box size={16} />
-                        <span className="font-medium">
-                            Repositories
-                        </span>
-                    </div>
-
-                    {loadingRepos && (
-                        <Loader2 className="animate-spin" size={16} />
-                    )}
-
-                </div>
-
-                {settings.selectedrepos.map((repo) => {
-
-                    // const selected = selectedRepos.includes(repo.id);
-                    return (
-                        <div
-                            key={repo.id}
-                            // onClick={() => toggleRepo(repo.id)}
-                            className={`p-3 border rounded-lg cursor-pointer flex justify-between transition hover:border-primary/50" }`}
+                        {/* <div
+                        style={{
+                            display: "flex",
+                            flexDirection: "column",
+                        }}
                         >
-
-                            <div className="flex gap-2 items-center">
-                                <GitBranch size={16} />
-                                <span className="font-mono">
-                                    {repo.full_name}
-                                </span>
+                            <div>
+                                Installation ID
                             </div>
-                            {/* 
-                            {selected && (
-                                <CheckCircle2
-                                    size={16}
-                                    className="text-primary"
-                                />
-                            )} */}
-
-                        </div>
-                    );
-
-                })}
-
-            </section>
-
-            {/* AI Model */}
-            <section className="p-6 border rounded-xl space-y-2">
-
-                <div className="flex gap-2 items-center">
-                    <Bot size={16} />
-                    <Label>AI Model</Label>
-                </div>
-                <Select
-                    defaultValue={settings.provider || ""}
-                    onValueChange={(value) =>
-                        updateField("provider", value)
-                    }
-                >
-                    <SelectTrigger>
-                        <SelectValue placeholder="Select AI model" />
-                    </SelectTrigger>
-
-                    <SelectContent>
-
-                        {AI_MODELS.map((model) =>(
-                            <SelectItem
-                                key={model.value}
-                                value={model.value}
+                            <label
+                                style={{
+                                    display: "flex",
+                                    alignItems: "center",
+                                    gap: 8,
+                                    fontSize: 10,
+                                    fontWeight: 200,
+                                    color: "gray",
+                                    marginBottom: 10,
+                                }}
                             >
-                                {model.label}
-                            </SelectItem>
-
-                        ))}
-
-                    </SelectContent>
-
-                </Select>
-
-            </section>
-
-            {/* Auto Review */}
-            {/* <section className="p-6 border rounded-xl flex justify-between items-center">
-
-                <div>
-                    <p className="font-medium">
-                        Auto-review pull requests
-                    </p>
-                    <p className="text-sm text-muted-foreground">
-                        Automatically review new PRs
-                    </p>
+                                Enter installation ID for other fields or saved data to show up!
+                            </label>
+                        </div> */}
+                    </label>
+                    <label
+                        style={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: 8,
+                            fontSize: 10,
+                            fontWeight: 200,
+                            color: "gray",
+                            marginBottom: 10,
+                        }}
+                    >
+                        Enter installation ID for other fields or saved data to show up!
+                    </label>
+                    <input
+                        defaultValue={settings.installationId}
+                        onBlur={(e) => updateField("installationId", e.target.value)}
+                        placeholder="Enter installation ID"
+                        style={{
+                            width: "100%",
+                            background: "#0d1117",
+                            border: "1px solid #30363d",
+                            borderRadius: 6,
+                            padding: "8px 12px",
+                            fontSize: 14,
+                            color: "#c9d1d9",
+                            outline: "none",
+                            boxSizing: "border-box",
+                        }}
+                        onFocus={(e) =>
+                            (e.target.style.borderColor = "#58a6ff")
+                        }
+                        onBlurCapture={(e) =>
+                            (e.target.style.borderColor = "#30363d")
+                        }
+                    />
                 </div>
 
-                <button
-                    onClick={() =>
-                        updateField(
-                            "autoReview",
-                            !settings.autoReview
-                        )
-                    }
-                    className={`w-12 h-6 rounded-full transition
-            ${settings.autoReview
-                            ? "bg-primary"
-                            : "bg-gray-300"
-                        }`}
-                />
+                {/* Conditional sections */}
+                {hasInstallationId && (
+                    <>
+                        {/* Repositories Card */}
+                        <div
+                            style={{
+                                background: "#161b22",
+                                border: "1px solid #30363d",
+                                borderRadius: 10,
+                                padding: "20px 20px 18px",
+                                marginBottom: 12,
+                            }}
+                        >
+                            <div
+                                style={{
+                                    display: "flex",
+                                    alignItems: "center",
+                                    justifyContent: "space-between",
+                                    marginBottom:
+                                        settings.selectedrepos.length > 0 ? 12 : 0,
+                                }}
+                            >
+                                <label
+                                    style={{
+                                        display: "flex",
+                                        alignItems: "center",
+                                        gap: 8,
+                                        fontSize: 14,
+                                        fontWeight: 500,
+                                        color: "#e6edf3",
+                                    }}
+                                >
+                                    <Box size={16} color="#8b949e" />
+                                    Repositories
+                                </label>
+                                {loadingRepos && (
+                                    <Loader2
+                                        size={16}
+                                        color="#8b949e"
+                                        className="animate-spin"
+                                    />
+                                )}
+                            </div>
 
-            </section> */}
+                            {settings.selectedrepos.map((repo) => (
+                                <div
+                                    key={repo.id}
+                                    onClick={() => toggleRepo(repo.id)}
+                                    style={{
+                                        display: "flex",
+                                        alignItems: "center",
+                                        gap: 8,
+                                        padding: "8px 12px",
+                                        background: "#0d1117",
+                                        border: "1px solid #30363d",
+                                        borderRadius: 6,
+                                        marginBottom: 6,
+                                        cursor: "pointer",
+                                        fontSize: 13,
+                                        color: "#c9d1d9",
+                                        transition: "border-color 0.15s",
+                                    }}
+                                    onMouseEnter={(e) =>
+                                        (e.currentTarget.style.borderColor = "#58a6ff")
+                                    }
+                                    onMouseLeave={(e) =>
+                                        (e.currentTarget.style.borderColor = "#30363d")
+                                    }
+                                >
+                                    <GitBranch size={14} color="#8b949e" />
+                                    {repo.full_name}
+                                </div>
+                            ))}
+                        </div>
 
-            {/* Save */}
-            <div className="flex justify-end">
+                        {/* AI Model Card */}
+                        <div
+                            style={{
+                                background: "#161b22",
+                                border: "1px solid #30363d",
+                                borderRadius: 10,
+                                padding: "20px 20px 18px",
+                                marginBottom: 16,
+                            }}
+                        >
+                            <label
+                                style={{
+                                    display: "flex",
+                                    alignItems: "center",
+                                    gap: 8,
+                                    fontSize: 14,
+                                    fontWeight: 500,
+                                    color: "#e6edf3",
+                                    marginBottom: 10,
+                                }}
+                            >
+                                <Bot size={16} color="#8b949e" />
+                                AI Model
+                            </label>
+                            <select
+                                value={settings.provider || ""}
+                                onChange={(e) => updateField("provider", e.target.value)}
+                                style={{
+                                    width: "100%",
+                                    background: "#0d1117",
+                                    border: "1px solid #30363d",
+                                    borderRadius: 6,
+                                    padding: "8px 12px",
+                                    fontSize: 14,
+                                    color: settings.provider ? "#c9d1d9" : "#484f58",
+                                    outline: "none",
+                                    cursor: "pointer",
+                                    boxSizing: "border-box",
+                                    appearance: "none",
+                                    backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%238b949e' viewBox='0 0 16 16'%3E%3Cpath d='M4.427 7.427l3.396 3.396a.25.25 0 00.354 0l3.396-3.396A.25.25 0 0011.396 7H4.604a.25.25 0 00-.177.427z'/%3E%3C/svg%3E")`,
+                                    backgroundRepeat: "no-repeat",
+                                    backgroundPosition: "right 12px center",
+                                }}
+                                onFocus={(e) =>
+                                    (e.target.style.borderColor = "#58a6ff")
+                                }
+                                onBlur={(e) =>
+                                    (e.target.style.borderColor = "#30363d")
+                                }
+                            >
+                                <option value="" disabled>
+                                    Select AI model
+                                </option>
+                                {AI_MODELS.map((model) => (
+                                    <option key={model.value} value={model.value}>
+                                        {model.label}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
 
-                <Button
-                    onClick={handleSave}
-                    disabled={saving}
-                >
-
-                    {saving ? (
-                        <>
-                            <Loader2
-                                className="animate-spin mr-2"
-                                size={16}
-                            />
-                            Saving...
-                        </>
-                    ) : (
-                        <>
-                            <Save size={16} className="mr-2" />
-                            Save Settings
-                        </>
-                    )}
-
-                </Button>
-
+                        {/* Save Button */}
+                        <div style={{ display: "flex", justifyContent: "flex-end" }}>
+                            <button
+                                onClick={handleSave}
+                                disabled={saving}
+                                style={{
+                                    display: "inline-flex",
+                                    alignItems: "center",
+                                    gap: 8,
+                                    padding: "10px 24px",
+                                    background: saving
+                                        ? "#1a2a1f"
+                                        : "linear-gradient(135deg, #238636, #2ea043)",
+                                    color: "#fff",
+                                    border: "none",
+                                    borderRadius: 8,
+                                    fontSize: 14,
+                                    fontWeight: 600,
+                                    cursor: saving ? "not-allowed" : "pointer",
+                                    transition: "opacity 0.15s",
+                                    opacity: saving ? 0.6 : 1,
+                                }}
+                                onMouseEnter={(e) => {
+                                    if (!saving) e.currentTarget.style.opacity = "0.9";
+                                }}
+                                onMouseLeave={(e) => {
+                                    if (!saving) e.currentTarget.style.opacity = "1";
+                                }}
+                            >
+                                {saving ? (
+                                    <>
+                                        <Loader2 size={16} className="animate-spin" />
+                                        Saving...
+                                    </>
+                                ) : (
+                                    <>
+                                        <Save size={16} />
+                                        Save Settings
+                                    </>
+                                )}
+                            </button>
+                        </div>
+                    </>
+                )}
             </div>
-
         </div>
     );
 }
