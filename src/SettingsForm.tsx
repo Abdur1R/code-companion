@@ -23,6 +23,7 @@ import {
 const AI_MODELS = [
     { value: "huggingface", label: "Hugging Face", desc: "" },
     { value: "groq", label: "Groq", desc: "" },
+    { value: "claude", label: "Claude", desc: "" },
 ];
 
 interface Repo {

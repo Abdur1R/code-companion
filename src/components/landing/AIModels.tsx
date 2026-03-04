@@ -19,7 +19,7 @@ const models = [
   },
   {
     name: "Claude Code Analyst",
-    badge: "Coming Soon",
+    badge: "Active",
     badgeVariant: "secondary" as const,
     description: "Anthropic's model excelling at understanding complex codebases and providing safe suggestions.",
     capabilities: ["Large context", "Safety analysis", "Detailed explanations", "Multi-file review"],
@@ -60,11 +60,10 @@ const AIModels = () => {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: i * 0.1 }}
-              className={`rounded-xl border p-6 transition-all duration-300 ${
-                model.badge === "Active"
+              className={`rounded-xl border p-6 transition-all duration-300 ${model.badge === "Active"
                   ? "border-primary/30 bg-primary/5 glow-border"
                   : "border-border/50 bg-card/50 opacity-75 hover:opacity-100"
-              }`}
+                }`}
             >
               <div className="flex items-start justify-between">
                 <h3 className="text-lg font-semibold">{model.name}</h3>
