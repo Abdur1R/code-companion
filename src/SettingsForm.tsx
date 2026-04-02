@@ -20,10 +20,13 @@ import {
     getUserId,
 } from "@/services/installations";
 
-const AI_MODELS = [
+const AI_PROVIDERS = [
     { value: "huggingface", label: "Hugging Face", desc: "" },
     { value: "groq", label: "Groq", desc: "" },
     { value: "claude", label: "Claude", desc: "" },
+    { value: "openrouter", label: "OpenRouter", desc: "" },
+    { value: "together", label: "Together", desc: "" },
+    { value: "sambanova", label: "Sambanova", desc: "" },
 ];
 
 interface Repo {
@@ -45,6 +48,7 @@ const defaultSettings: SettingsState = {
     model: "",
     autoReview: true,
     selectedrepos: [],
+    provider: ""
 };
 
 export default function SettingsPage() {
@@ -100,9 +104,9 @@ export default function SettingsPage() {
                     }));
                     setIsFirstVisit(false);
                 }
-                if (!(data && !Object.keys(data).includes("exists"))) {
-                    loadRepos();
-                }
+                // if (!(data && !Object.keys(data).includes("exists"))) {
+                loadRepos();
+                // }
             } catch (err) {
                 console.error(err);
             }
@@ -401,7 +405,7 @@ export default function SettingsPage() {
                             ))}
                         </div>
 
-                        {/* AI Model Card */}
+                        {/* AI Provider Card */}
                         <div
                             style={{
                                 background: "#161b22",
@@ -423,7 +427,7 @@ export default function SettingsPage() {
                                 }}
                             >
                                 <Bot size={16} color="#8b949e" />
-                                AI Model
+                                AI Provider
                             </label>
                             <select
                                 value={settings.provider || ""}
@@ -452,11 +456,11 @@ export default function SettingsPage() {
                                 }
                             >
                                 <option value="" disabled>
-                                    Select AI model
+                                    Select AI Provider
                                 </option>
-                                {AI_MODELS.map((model) => (
-                                    <option key={model.value} value={model.value}>
-                                        {model.label}
+                                {AI_PROVIDERS.map((provider) => (
+                                    <option key={provider.value} value={provider.value}>
+                                        {provider.label}
                                     </option>
                                 ))}
                             </select>
