@@ -23,9 +23,9 @@ import {
 const AI_PROVIDERS = [
     { value: "huggingface", label: "Hugging Face", desc: "" },
     { value: "groq", label: "Groq", desc: "" },
-    { value: "claude", label: "Claude", desc: "" },
+    // { value: "claude", label: "Claude", desc: "" },
     { value: "openrouter", label: "OpenRouter", desc: "" },
-    { value: "together", label: "Together", desc: "" },
+    // { value: "together", label: "Together", desc: "" },
     { value: "sambanova", label: "Sambanova", desc: "" },
 ];
 
