@@ -67,7 +67,9 @@ export default function SettingsPage() {
         key: K,
         value: SettingsState[K]
     ) {
-        setLoadingRepos(true);
+        if (key === "installationId") {
+            setLoadingRepos(true);
+        }
         setSettings((prev) => ({ ...prev, [key]: value }));
     }
 
