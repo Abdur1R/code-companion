@@ -67,6 +67,7 @@ export default function SettingsPage() {
         key: K,
         value: SettingsState[K]
     ) {
+        setLoadingRepos(true);
         setSettings((prev) => ({ ...prev, [key]: value }));
     }
 
@@ -113,7 +114,6 @@ export default function SettingsPage() {
         }
 
         async function loadRepos() {
-            setLoadingRepos(true);
             try {
                 const res: any = await getInstallationRepos(
                     Number(installationId || settings.installationId || 0)
@@ -226,7 +226,7 @@ export default function SettingsPage() {
                     </div>
                 )}
 
-                {hasInstallationId && !isFirstVisit && (
+                {hasInstallationId && !isFirstVisit && !loadingRepos && (
                     <div
                         style={{
                             background: "rgba(56, 139, 253, 0.1)",
@@ -331,7 +331,7 @@ export default function SettingsPage() {
                 </div>
 
                 {/* Conditional sections */}
-                {hasInstallationId && (
+                {(!loadingRepos ? (hasInstallationId &&
                     <>
                         {/* Repositories Card */}
                         <div
@@ -509,6 +509,13 @@ export default function SettingsPage() {
                             </button>
                         </div>
                     </>
+                )
+                    :
+                    <Loader2
+                        size={16}
+                        color="#8b949e"
+                        className="animate-spin"
+                    />
                 )}
             </div>
         </div>
